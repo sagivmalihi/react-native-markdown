@@ -7,6 +7,19 @@ var {
 var SimpleMarkdown = require('simple-markdown');
 var _ = require('lodash');
 
+function _splitWordsAndApplyStyle(text, style) {
+  var words = text.split(' ');
+  words = _.map(words, function(word, i) {
+    if (i != words.length - 1) {
+      word = word + ' ';
+    }
+    return React.createElement(Text, {
+      style: style
+    }, word);
+  });
+  return words;
+}
+
 module.exports = function(styles) {
   return {
     autolink: {
@@ -156,7 +169,7 @@ module.exports = function(styles) {
         return React.createElement(Text, {
           key: state.key,
           style: styles.strong
-        }, output(node.content, state));
+        }, _splitWordsAndApplyStyle(node.content, {}));
       }
     },
     table: {
@@ -189,21 +202,11 @@ module.exports = function(styles) {
     text: {
       react: function(node, output, state) {
         // Breaking words up in order to allow for text reflowing in flexbox
-        var words = node.content.split(' ');
-        words = _.map(words, function(word, i) {
-          var elements = [];
-          if (i != words.length - 1) {
-            word = word + ' ';
-          }
-          var textStyles = [styles.text];
-          if (!state.withinText) {
-            textStyles.push(styles.plainText);
-          }
-          return React.createElement(Text, {
-            style: textStyles
-          }, word);
-        });
-        return words;
+        var textStyles = [styles.text];
+        if (!state.withinText) {
+          textStyles.push(styles.plainText);
+        }
+        return _splitWordsAndApplyStyle(node.content, textStyles);
       }
     },
     u: {
